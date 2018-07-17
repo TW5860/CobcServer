@@ -24,17 +24,16 @@ public class RestController {
     public ResponseEntity<RestResult> compileAndExecuteCobol(
             @RequestBody RestRequest testsuite) throws IOException {
 
-        RestResult result = new RestResult();
-
         Files.deleteIfExists(Paths.get("testdriver.cbl"));
         Files.deleteIfExists(Paths.get("test"));
 
-        // Write tmp files
+        // Write tmp file
         Files.write(Paths.get("testdriver.cbl"), testsuite.getCobolCode().getBytes());
 
-        // Get shell
-        result = callShell("sh build.sh");
+        // compile and execute driver
+        RestResult result = callShell("sh build.sh");
 
+        // echo shell output
         System.out.println(result.getSystemoutput());
         System.err.println(result.getSystemerror());
 
@@ -46,7 +45,7 @@ public class RestController {
         Process process;
         try {
             process = Runtime.getRuntime()
-                    .exec(String.format(command));
+                    .exec(command);
 
             StringLineBuilder commandLineOutput = registerCLReader(process);
             StringLineBuilder commandLineError = registerCLErrorReader(process);
@@ -100,7 +99,7 @@ public class RestController {
     static class StringLineBuilder {
         StringBuilder builder = new StringBuilder();
 
-        public StringLineBuilder append(String line) {
+        StringLineBuilder append(String line) {
             builder.append(line);
             builder.append("\n");
             return this;

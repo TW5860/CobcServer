@@ -3,10 +3,6 @@ items:
 - apiVersion: v1
   kind: Service
   metadata:
-    annotations:
-      kompose.cmd: kompose convert -f docker-compose.yml --provider openshift --build
-        build-config --build-repo https://github.com/TW5860/CobcServer.git -o cobc-server.yaml
-      kompose.version: 1.9.0 ()
     creationTimestamp: null
     labels:
       io.kompose.service: cobcserver
@@ -23,10 +19,6 @@ items:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    annotations:
-      kompose.cmd: kompose convert -f docker-compose.yml --provider openshift --build
-        build-config --build-repo https://github.com/TW5860/CobcServer.git -o cobc-server.yaml
-      kompose.version: 1.9.0 ()
     creationTimestamp: null
     labels:
       io.kompose.service: cobcserver
@@ -95,10 +87,6 @@ items:
 - apiVersion: v1
   kind: BuildConfig
   metadata:
-    annotations:
-      kompose.cmd: kompose convert -f docker-compose.yml --provider openshift --build
-        build-config --build-repo https://github.com/TW5860/CobcServer.git -o cobc-server.yaml
-      kompose.version: 1.9.0 ()
     creationTimestamp: null
     labels:
       io.kompose.service: cobcserver
@@ -122,6 +110,7 @@ items:
       contextDir: CobcServerDocker/
       git:
         ref: master
+        # TODO: CHANGE ME TO A LOCAL REPO
         uri: https://github.com/TW5860/CobcServer.git
       type: Git
     strategy:
