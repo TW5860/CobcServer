@@ -1,19 +1,6 @@
-###############################################################################
-# BASE IMAGE FOR ALL
-FROM registry.access.redhat.com/rhel7:7.4 AS javaServer
+FROM registry.access.redhat.com/rhel7:7.4
 RUN yum install java-1.8.0-openjdk-devel -y
-#------------------------------------------------------------------------------
-
-###############################################################################
-# BASE IMAGE FOR JAVA BUILD CONTAINER WITH MAVEN
-FROM javaServer AS javaBuildServer
 RUN yum install git maven openssh-server openssh-clients -y
-#------------------------------------------------------------------------------
-
-###############################################################################
-# MACHINE WITH COBC INSTALLED
-FROM javaServer AS cobcBuild
-
 # Setup operating system and required applications
 RUN yum install autoconf \
                 gcc \
@@ -36,12 +23,8 @@ RUN make check
 RUN make installcheck
 COPY usrlocallib.conf /etc/ld.so.conf.d/usrlocallib.conf
 RUN ldconfig -v
-#------------------------------------------------------------------------------
 
-###############################################################################
-# JAVA SOURCE TO IMAGE FROM REPO
-FROM javaBuildServer AS javaBuild
-ENV GIT_URL git@github.com:TW5860/CobcServer.git
+ENV GIT_URL https://github.com/TW5860/CobcServer.git
 ARG ssh_prv_key
 ARG ssh_pub_key
 
@@ -65,18 +48,12 @@ RUN rm -rf /root/.ssh/
 ## Buildprocess
 WORKDIR /cobcserver
 RUN mvn clean package -DskipTests
-#------------------------------------------------------------------------------
-
-
-###############################################################################
-# DEPLOYABLE IMAGE COBC + JAVA COMPILED
-FROM cobcBuild
 # Setup Application context
 WORKDIR /
 RUN mkdir /cobcserver
 
 WORKDIR /cobcserver
-COPY --from=javaBuild /cobcserver/target/cobc-server.jar app.jar
+COPY /cobcserver/target/cobc-server.jar app.jar
 RUN mkdir scripts && chmod -R 0777 scripts
 COPY build.sh build.sh
 
