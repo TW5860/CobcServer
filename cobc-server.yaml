@@ -107,23 +107,22 @@ items:
         memory: 256Mi
     runPolicy: Serial
     source:
-      contextDir: CobcServerDocker/
+      contextDir: CobcServerDocker
       git:
         ref: master
-        uri: git@github.com:TW5860/CobcServer.git
-        secrets:
-          - secretSource:
-              name: "ssh_private"
+        uri: 'git@github.com:TW5860/CobcServer.git'
+      secrets:
+        - destinationDir: root/.ssh/id_rsa
+          secret:
+            name: ssh-private
+        - destinationDir: root/.ssh/id_rsa.pub
+          secret:
+            name: ssh-public
+      sourceSecret:
+        name: ssh-private
       type: Git
     strategy:
-      dockerStrategy:
-        secrets:
-          - secretSource:
-              name: "ssh-private"
-              mountPath: "/root/.ssh/id_rsa"
-          - secretSource:
-              name: "ssh-public"
-              mountPath: "/root/.ssh/id_rsa.pub"
+      dockerStrategy: {}
       type: Docker
     triggers:
     - type: ConfigChange

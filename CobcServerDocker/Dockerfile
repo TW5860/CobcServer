@@ -1,8 +1,10 @@
 FROM centos
+# INSTALL JAVA FOR EXECUTION
 RUN yum install java-1.8.0-openjdk-devel -y
+# INSTALL MAVEN AND GIT FOR S2I
 RUN yum install git maven openssh-server openssh-clients -y
-# Setup operating system and required applications
 
+# INSTALL COBC
 RUN yum install autoconf \
                 gcc \
                 make \
@@ -14,8 +16,6 @@ RUN yum install autoconf \
                 -y
 COPY gnu-cobol.tar.gz gnu-cobol.tar.gz
 RUN tar zxf gnu-cobol.tar.gz
-
-# Install cobc
 WORKDIR gnucobol-2.2
 RUN ./configure --without-db
 RUN make
@@ -25,34 +25,28 @@ RUN make installcheck
 COPY usrlocallib.conf /etc/ld.so.conf.d/usrlocallib.conf
 RUN ldconfig -v
 
-ENV GIT_URL https://github.com/TW5860/CobcServer.git
+# BUILD CODE
+ENV GIT_URL git@github.com:TW5860/CobcServer.git
 ARG ssh_prv_key
 ARG ssh_pub_key
-
-# Authorize SSH Host
 RUN mkdir -p /root/.ssh && \
     chmod 0700 /root/.ssh && \
-    # ADD YOUR OWN REPO HOSTER HERE
+    # TODO: ADD YOUR OWN REPO HOSTER HERE
     ssh-keyscan github.com > /root/.ssh/known_hosts
-
 ## Add the keys and set permissions
 ## USE THIS IF YOU WANT TO RUN WITH BUILD ARGUMENTS
 #RUN echo "$ssh_prv_key" > /root/.ssh/id_rsa && \
 #    echo "$ssh_pub_key" > /root/.ssh/id_rsa.pub && \
 #    chmod 600 /root/.ssh/id_rsa && \
 #    chmod 600 /root/.ssh/id_rsa.pub
-
 WORKDIR /
-RUN git clone https://github.com/TW5860/CobcServer.git cobcserver
+RUN git clone $GIT_URL cobcserver
 RUN chmod -R 775 cobcserver
 # Remove SSH keys
-RUN rm -rf /root/.ssh/
-
+#RUN rm -rf /root/.ssh/
 ## Buildprocess
 WORKDIR /cobcserver
-RUN ls -la
-RUN ls -la && mvn clean package -DskipTests && pwd && \
-        ls -la
+RUN mvn clean package -DskipTests
 
 #COPY /cobcserver/target/cobc-server.jar app.jar
 RUN mkdir scripts && chmod -R 0777 scripts
@@ -65,4 +59,3 @@ RUN useradd -ms /bin/bash cobc
 USER cobc
 
 CMD ["java", "-jar", "/cobcserver/target/cobc-server.jar"]
-#------------------------------------------------------------------------------
