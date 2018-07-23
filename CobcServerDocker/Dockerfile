@@ -49,6 +49,7 @@ RUN rm -rf /root/.ssh/
 ## Buildprocess
 WORKDIR /cobcserver
 RUN mvn clean package -DskipTests
+
 # Setup Application context
 WORKDIR /
 RUN mkdir /cobcserver
