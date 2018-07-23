@@ -51,10 +51,11 @@ RUN rm -rf /root/.ssh/
 ## Buildprocess
 WORKDIR /cobcserver
 RUN ls -la
-RUN ls -la && mvn clean package -DskipTests && pwd && \
+RUN ls -la && mvn cl
+ean package -DskipTests && pwd && \
         ls -la
 
-COPY /cobcserver/target/cobc-server.jar app.jar
+#COPY /cobcserver/target/cobc-server.jar app.jar
 RUN mkdir scripts && chmod -R 0777 scripts
 COPY build.sh build.sh
 
@@ -64,5 +65,5 @@ EXPOSE 8080
 RUN useradd -ms /bin/bash cobc
 USER cobc
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "/cobcserver/target/cobc-server.jar"]
 #------------------------------------------------------------------------------
