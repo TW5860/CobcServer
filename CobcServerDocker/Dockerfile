@@ -1,9 +1,31 @@
 FROM centos AS javaServer
 RUN yum install java-1.8.0-openjdk-devel -y
 
-FROM javaServer AS javaBuild
+FROM javaServer AS javaBuildServer
 RUN yum install git maven -y
-RUN git clone https://github.com/TW5860/CobcServer.git cobcserver && chmod -R 775 /cobcserver
+
+FROM javaBuildServer AS javaBuild
+ENV GIT_URL git@github.com:TW5860/CobcServer.git
+ARG ssh_prv_key
+ARG ssh_pub_key
+
+RUN yum -y install openssh-server openssh-clients
+
+# Authorize SSH Host
+RUN mkdir -p /root/.ssh && \
+    chmod 0700 /root/.ssh && \
+    ssh-keyscan github.com > /root/.ssh/known_hosts
+
+# Add the keys and set permissions
+RUN echo "$ssh_prv_key" > /root/.ssh/id_rsa && \
+    echo "$ssh_pub_key" > /root/.ssh/id_rsa.pub && \
+    chmod 600 /root/.ssh/id_rsa && \
+    chmod 600 /root/.ssh/id_rsa.pub
+
+RUN git clone $GIT_URL cobcserver && chmod -R 775 /cobcserver
+# Remove SSH keys
+RUN rm -rf /root/.ssh/
+
 ## Buildprocess
 WORKDIR /cobcserver
 RUN mvn clean package -DskipTests
