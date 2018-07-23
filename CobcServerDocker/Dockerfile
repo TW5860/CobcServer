@@ -49,7 +49,8 @@ RUN rm -rf /root/.ssh/
 
 ## Buildprocess
 WORKDIR /cobcserver
-RUN mvn clean package -DskipTests && pwd && \
+RUN ls -la
+RUN ls -la && mvn clean package -DskipTests && pwd && \
         ls -la
 
 # Setup Application context
