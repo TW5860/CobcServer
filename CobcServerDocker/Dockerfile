@@ -51,11 +51,12 @@ RUN mkdir -p /root/.ssh && \
     # ADD YOUR OWN REPO HOSTER HERE
     ssh-keyscan github.com > /root/.ssh/known_hosts
 
-# Add the keys and set permissions
-RUN echo "$ssh_prv_key" > /root/.ssh/id_rsa && \
-    echo "$ssh_pub_key" > /root/.ssh/id_rsa.pub && \
-    chmod 600 /root/.ssh/id_rsa && \
-    chmod 600 /root/.ssh/id_rsa.pub
+## Add the keys and set permissions
+## USE THIS IF YOU WANT TO RUN WITH BUILD ARGUMENTS
+#RUN echo "$ssh_prv_key" > /root/.ssh/id_rsa && \
+#    echo "$ssh_pub_key" > /root/.ssh/id_rsa.pub && \
+#    chmod 600 /root/.ssh/id_rsa && \
+#    chmod 600 /root/.ssh/id_rsa.pub
 
 RUN git clone $GIT_URL cobcserver && chmod -R 775 /cobcserver
 # Remove SSH keys

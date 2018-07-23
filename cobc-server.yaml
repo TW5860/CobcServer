@@ -110,11 +110,23 @@ items:
       contextDir: CobcServerDocker/
       git:
         ref: master
-        # TODO: CHANGE ME TO A LOCAL REPO
-        uri: https://github.com/TW5860/CobcServer.git
+        uri: git@github.com:TW5860/CobcServer.git
+        secrets:
+          - secretSource:
+              name: "ssh_private"
       type: Git
     strategy:
-      dockerStrategy: {}
+      dockerStrategy:
+        buildArgs:
+          - name: "foo"
+            value: "bar"
+        secrets:
+          - secretSource:
+              name: "ssh_private"
+              mountPath: "/root/.ssh/id_rsa"
+          - secretSource:
+              name: "ssh_public"
+              mountPath: "/root/.ssh/id_rsa.pub"
       type: Docker
     triggers:
     - type: ConfigChange
