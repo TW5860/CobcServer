@@ -1,52 +1,52 @@
-#FROM registry.access.redhat.com/rhel7:7.4
-FROM centos
+FROM centos AS javaBuild
+RUN yum install git maven java-1.8.0-openjdk-devel -y
+RUN git clone https://github.com/TW5860/CobcServer.git cobcserver && chmod -R 775 /cobcserver
+## Buildprocess
+WORKDIR /cobcserver
+RUN mvn clean package -DskipTests
+
+
+
+
+FROM centos AS cobcBuild
 
 # Setup operating system and required applications
-RUN yum install \
-                autoconf \
-                gcc  \
-                gmp gmp-devel \
-                java-1.8.0-openjdk-devel \
-                libdb-dev \
-                libncurses5-dev \
-                libgmp-dev \
-                make \
-                which -y
-#RUN wget -O gnu-cobol.tar.gz https://sourceforge.net/projects/open-cobol/files/gnu-cobol/2.2/gnucobol-2.2.tar.gz/download
-COPY gnu-cobol.tar.gz gnu-cobol.tar.gz
+RUN yum install wget gcc make libdb-dev libncurses5-dev libgmp-dev gmp gmp-devel autoconf -y
+RUN yum install -y java-1.8.0-openjdk-devel wget which
+RUN wget -O gnu-cobol.tar.gz https://sourceforge.net/projects/open-cobol/files/gnu-cobol/2.2/gnucobol-2.2.tar.gz/download
 RUN tar zxf gnu-cobol.tar.gz
 
 # Install cobc
 WORKDIR gnucobol-2.2
 RUN ./configure --without-db
-RUN make && \
-    make install &&\
-    make check &&\
-    make installcheck
-RUN echo "/usr/local/lib > /etc/ld.so.conf.d/usrlocallib.conf" \
-    ldconfig -v
+RUN make
+RUN make install
+RUN make check
+RUN make installcheck
+COPY usrlocallib.conf /etc/ld.so.conf.d/usrlocallib.conf
+RUN ldconfig -v
 
+
+
+
+FROM cobcBuild
 # Setup Application context
-## Build requirements
 WORKDIR /
-RUN yum install git maven java-1.8.0-openjdk-devel -y
-RUN git clone https://github.com/TW5860/CobcServer.git && chmod -R 775 /CobcServer
-WORKDIR /CobcServer
-## Buildprocess
-RUN mvn clean package -DskipTests
-RUN mv target/cobc-server.jar app.jar
-## Copy file requirements
-COPY build.sh /CobcServer/build.sh
+RUN mkdir /cobcserver
 
+WORKDIR /cobcserver
+COPY --from=javaBuild /cobcserver/target/cobc-server.jar app.jar
 RUN mkdir scripts
 RUN chmod -R 0777 scripts
-RUN touch scripts/testdriver.cbl
-RUN touch scripts/test
+COPY build.sh build.sh
+
+
+# Run the application
+
 EXPOSE 8080
 
-# Add cobc user
 RUN useradd -ms /bin/bash cobc
 USER cobc
 
-CMD ["java", "-jar", "/CobcServer/app.jar"]
+CMD ["java", "-jar", "app.jar"]
 #CMD ["sh"]
