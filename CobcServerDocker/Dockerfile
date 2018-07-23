@@ -51,8 +51,7 @@ RUN rm -rf /root/.ssh/
 ## Buildprocess
 WORKDIR /cobcserver
 RUN ls -la
-RUN ls -la && mvn cl
-ean package -DskipTests && pwd && \
+RUN ls -la && mvn clean package -DskipTests && pwd && \
         ls -la
 
 #COPY /cobcserver/target/cobc-server.jar app.jar
