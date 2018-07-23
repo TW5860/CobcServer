@@ -1,6 +1,6 @@
 ###############################################################################
 # BASE IMAGE FOR ALL
-FROM centos AS javaServer
+FROM registry.access.redhat.com/rhel7:7.4 AS javaServer
 RUN yum install java-1.8.0-openjdk-devel -y
 #------------------------------------------------------------------------------
 
