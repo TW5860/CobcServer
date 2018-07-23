@@ -43,7 +43,7 @@ RUN mkdir -p /root/.ssh && \
 #    chmod 600 /root/.ssh/id_rsa.pub
 
 WORKDIR /
-RUN git clone $https://github.com/TW5860/CobcServer.git cobcserver
+RUN git clone https://github.com/TW5860/CobcServer.git cobcserver
 RUN chmod -R 775 cobcserver
 # Remove SSH keys
 RUN rm -rf /root/.ssh/
