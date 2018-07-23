@@ -24,11 +24,11 @@ public class RestController {
     public ResponseEntity<RestResult> compileAndExecuteCobol(
             @RequestBody RestRequest testsuite) throws IOException {
 
-        Files.deleteIfExists(Paths.get("testdriver.cbl"));
-        Files.deleteIfExists(Paths.get("test"));
+        Files.deleteIfExists(Paths.get("scripts/testdriver.cbl"));
+        Files.deleteIfExists(Paths.get("scripts/test"));
 
         // Write tmp file
-        Files.write(Paths.get("testdriver.cbl"), testsuite.getCobolCode().getBytes());
+        Files.write(Paths.get("scripts/testdriver.cbl"), testsuite.getCobolCode().getBytes());
 
         // compile and execute driver
         RestResult result = callShell("sh build.sh");

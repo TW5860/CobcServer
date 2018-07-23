@@ -19,30 +19,29 @@ RUN tar zxf gnu-cobol.tar.gz
 # Install cobc
 WORKDIR gnucobol-2.2
 RUN ./configure --without-db
-RUN make
-RUN make install
-RUN make check
-RUN make installcheck
-RUN echo "/usr/local/lib > /etc/ld.so.conf.d/usrlocallib.conf"
-RUN ldconfig -v
+RUN make && \
+    make install &&\
+    make check &&\
+    make installcheck
+RUN echo "/usr/local/lib > /etc/ld.so.conf.d/usrlocallib.conf" \
+    ldconfig -v
 
 # Setup Application context
+## Build requirements
 WORKDIR /
 RUN yum install git maven java-1.8.0-openjdk-devel -y
 RUN git clone https://github.com/TW5860/CobcServer.git
-#COPY cobc-server.jar /cobcserver/app.jar
-COPY build.sh /CobcServer/build.sh
 RUN chmod -R 775 /CobcServer
-
-
-# Run the application
 WORKDIR /CobcServer
-RUN mvn clean package -DskipTests
+## Buildprocess
+RUN mvn clean package
 RUN mv target/cobc-server.jar app.jar
+## Copy file requirements
+COPY build.sh /CobcServer/build.sh
 
-RUN touch testdriver.cbl
-RUN touch test
-RUN touch ../test
+RUN mkdir scripts && chmod -R 0777 scripts && cd scripts \
+    touch testdriver.cbl & \
+    touch test
 EXPOSE 8080
 
 # Add cobc user
@@ -50,3 +49,4 @@ RUN useradd -ms /bin/bash cobc
 USER cobc
 
 CMD ["java", "-jar", "/CobcServer/app.jar"]
+#CMD ["sh"]
