@@ -54,11 +54,6 @@ RUN ls -la
 RUN ls -la && mvn clean package -DskipTests && pwd && \
         ls -la
 
-# Setup Application context
-WORKDIR /
-RUN mkdir /cobcserver
-
-WORKDIR /cobcserver
 COPY /cobcserver/target/cobc-server.jar app.jar
 RUN mkdir scripts && chmod -R 0777 scripts
 COPY build.sh build.sh
