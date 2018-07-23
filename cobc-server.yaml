@@ -117,15 +117,12 @@ items:
       type: Git
     strategy:
       dockerStrategy:
-        buildArgs:
-          - name: "foo"
-            value: "bar"
         secrets:
           - secretSource:
-              name: "ssh_private"
+              name: "ssh-private"
               mountPath: "/root/.ssh/id_rsa"
           - secretSource:
-              name: "ssh_public"
+              name: "ssh-public"
               mountPath: "/root/.ssh/id_rsa.pub"
       type: Docker
     triggers:
