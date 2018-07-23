@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/rhel7:7.4
+FROM centos
 RUN yum install java-1.8.0-openjdk-devel -y
 RUN yum install git maven openssh-server openssh-clients -y
 # Setup operating system and required applications
