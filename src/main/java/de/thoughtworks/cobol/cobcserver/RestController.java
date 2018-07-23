@@ -31,7 +31,7 @@ public class RestController {
         Files.write(Paths.get("scripts/testdriver.cbl"), testsuite.getCobolCode().getBytes());
 
         // compile and execute driver
-        RestResult result = callShell("sh build.sh");
+        RestResult result = callShell("ls -al");
 
         // echo shell output
         System.out.println(result.getSystemoutput());

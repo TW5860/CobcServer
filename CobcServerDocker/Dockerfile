@@ -30,18 +30,18 @@ RUN echo "/usr/local/lib > /etc/ld.so.conf.d/usrlocallib.conf" \
 ## Build requirements
 WORKDIR /
 RUN yum install git maven java-1.8.0-openjdk-devel -y
-RUN git clone https://github.com/TW5860/CobcServer.git
-RUN chmod -R 775 /CobcServer
+RUN git clone https://github.com/TW5860/CobcServer.git && chmod -R 775 /CobcServer
 WORKDIR /CobcServer
 ## Buildprocess
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 RUN mv target/cobc-server.jar app.jar
 ## Copy file requirements
 COPY build.sh /CobcServer/build.sh
 
-RUN mkdir scripts && chmod -R 0777 scripts && cd scripts \
-    touch testdriver.cbl & \
-    touch test
+RUN mkdir scripts
+RUN chmod -R 0777 scripts
+RUN touch scripts/testdriver.cbl
+RUN touch scripts/test
 EXPOSE 8080
 
 # Add cobc user
