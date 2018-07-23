@@ -1,19 +1,27 @@
-FROM centos AS javaBuild
-RUN yum install git maven java-1.8.0-openjdk-devel -y
+FROM centos AS javaServer
+RUN yum install java-1.8.0-openjdk-devel -y
+
+FROM javaServer AS javaBuild
+RUN yum install git maven -y
 RUN git clone https://github.com/TW5860/CobcServer.git cobcserver && chmod -R 775 /cobcserver
 ## Buildprocess
 WORKDIR /cobcserver
 RUN mvn clean package -DskipTests
 
 
-
-
-FROM centos AS cobcBuild
+FROM javaServer AS cobcBuild
 
 # Setup operating system and required applications
-RUN yum install wget gcc make libdb-dev libncurses5-dev libgmp-dev gmp gmp-devel autoconf -y
-RUN yum install -y java-1.8.0-openjdk-devel wget which
-RUN wget -O gnu-cobol.tar.gz https://sourceforge.net/projects/open-cobol/files/gnu-cobol/2.2/gnucobol-2.2.tar.gz/download
+RUN yum install autoconf \
+                gcc \
+                make \
+                libdb-dev \
+                libncurses5-dev \
+                libgmp-dev \
+                gmp gmp-devel \
+                which \
+                -y
+COPY gnu-cobol.tar.gz gnu-cobol.tar.gz
 RUN tar zxf gnu-cobol.tar.gz
 
 # Install cobc
@@ -36,17 +44,13 @@ RUN mkdir /cobcserver
 
 WORKDIR /cobcserver
 COPY --from=javaBuild /cobcserver/target/cobc-server.jar app.jar
-RUN mkdir scripts
-RUN chmod -R 0777 scripts
+RUN mkdir scripts && chmod -R 0777 scripts
 COPY build.sh build.sh
 
-
 # Run the application
-
 EXPOSE 8080
 
 RUN useradd -ms /bin/bash cobc
 USER cobc
 
 CMD ["java", "-jar", "app.jar"]
-#CMD ["sh"]
