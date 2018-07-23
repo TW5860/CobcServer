@@ -28,14 +28,17 @@ RUN ldconfig -v
 
 # Setup Application context
 WORKDIR /
-COPY cobc-server.jar /cobcserver/app.jar
-COPY build.sh /cobcserver/build.sh
-
-RUN chmod -R 775 /cobcserver
+RUN yum install git maven java-1.8.0-openjdk-devel -y
+RUN git clone https://github.com/TW5860/CobcServer.git
+#COPY cobc-server.jar /cobcserver/app.jar
+COPY build.sh /CobcServer/build.sh
+RUN chmod -R 775 /CobcServer
 
 
 # Run the application
-WORKDIR /cobcserver
+WORKDIR /CobcServer
+RUN mvn clean package -DskipTests
+RUN mv target/cobc-server.jar app.jar
 
 RUN touch testdriver.cbl
 RUN touch test
@@ -43,9 +46,7 @@ RUN touch ../test
 EXPOSE 8080
 
 # Add cobc user
-RUN groupadd -r cobc && useradd -r -g cobc \
-    && mkdir -p /home/cobc/Downloads && chown -R cobc:cobc /home/cobc
-# Run Chrome as non privileged user
+RUN useradd -ms /bin/bash cobc
 USER cobc
 
-CMD ["java", "-jar", "/cobcserver/app.jar"]
+CMD ["java", "-jar", "/CobcServer/app.jar"]
