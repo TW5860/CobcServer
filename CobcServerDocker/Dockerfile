@@ -26,19 +26,7 @@ COPY usrlocallib.conf /etc/ld.so.conf.d/usrlocallib.conf
 RUN ldconfig -v
 
 # BUILD CODE
-ENV GIT_URL git@github.com:TW5860/CobcServer.git
-ARG ssh_prv_key
-ARG ssh_pub_key
-RUN mkdir -p /root/.ssh && \
-    chmod 0700 /root/.ssh && \
-    # TODO: ADD YOUR OWN REPO HOSTER HERE
-    ssh-keyscan github.com > /root/.ssh/known_hosts
-## Add the keys and set permissions
-## USE THIS IF YOU WANT TO RUN WITH BUILD ARGUMENTS
-#RUN echo "$ssh_prv_key" > /root/.ssh/id_rsa && \
-#    echo "$ssh_pub_key" > /root/.ssh/id_rsa.pub && \
-#    chmod 600 /root/.ssh/id_rsa && \
-#    chmod 600 /root/.ssh/id_rsa.pub
+ENV GIT_URL https://github.com/TW5860/CobcServer.git
 WORKDIR /
 RUN git clone $GIT_URL cobcserver
 RUN chmod -R 775 cobcserver
