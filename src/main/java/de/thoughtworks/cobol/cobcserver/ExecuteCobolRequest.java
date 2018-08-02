@@ -1,4 +1,4 @@
-package de.thoughtworks.cobol.cobcserver.interfaces;
+package de.thoughtworks.cobol.cobcserver;
 
 public class ExecuteCobolRequest {
     private String cobolCode;
