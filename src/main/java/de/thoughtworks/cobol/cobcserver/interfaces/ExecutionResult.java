@@ -1,6 +1,6 @@
 package de.thoughtworks.cobol.cobcserver.interfaces;
 
-public class RestResult {
+public class ExecutionResult {
 
     private String systemoutput;
     private String systemerror;

@@ -1,7 +1,7 @@
 package de.thoughtworks.cobol.cobcserver;
 
-import de.thoughtworks.cobol.cobcserver.interfaces.RestRequest;
-import de.thoughtworks.cobol.cobcserver.interfaces.RestResult;
+import de.thoughtworks.cobol.cobcserver.interfaces.ExecuteCobolRequest;
+import de.thoughtworks.cobol.cobcserver.interfaces.ExecutionResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,18 +18,18 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 @Controller
-public class RestController {
+public class ExecuteCobolController {
 
     @RequestMapping(value = "/testCobol", method = RequestMethod.POST)
-    public ResponseEntity<RestResult> compileAndExecuteCobol(
-            @RequestBody RestRequest testsuite) throws IOException {
+    public ResponseEntity<ExecutionResult> compileAndExecuteCobol(
+            @RequestBody ExecuteCobolRequest testsuite) throws IOException {
 
         // Write tmp file
         Files.createDirectories(Paths.get("scripts/"));
         Files.write(Paths.get("scripts/testdriver.cbl"), testsuite.getCobolCode().getBytes());
 
         // compile and execute driver
-        RestResult result = callShell("sh build.sh");
+        ExecutionResult result = callShell("sh build.sh");
 
         // echo shell output
         System.out.println(result.getSystemoutput());
@@ -38,8 +38,8 @@ public class RestController {
         return ResponseEntity.ok().body(result);
     }
 
-    private RestResult callShell(String command) {
-        RestResult result = new RestResult();
+    private ExecutionResult callShell(String command) {
+        ExecutionResult result = new ExecutionResult();
         Process process;
         try {
             process = Runtime.getRuntime()

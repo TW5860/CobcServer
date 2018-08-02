@@ -1,13 +1,13 @@
 package de.thoughtworks.cobol.cobcserver.interfaces;
 
-public class RestRequest {
+public class ExecuteCobolRequest {
     private String cobolCode;
 
-    public RestRequest(String cobolCode) {
+    public ExecuteCobolRequest(String cobolCode) {
         this.cobolCode = cobolCode;
     }
 
-    public RestRequest() {
+    public ExecuteCobolRequest() {
     }
 
     public String getCobolCode() {
