@@ -22,7 +22,8 @@ public class ExecuteCobolController {
         writeTmpFile(testsuite);
         ExecutionResult result = compileAndExecute();
         printResults(result);
-        return ResponseEntity.ok().body(result);
+        return ResponseEntity.ok()
+                .body(result);
     }
 
     private void printResults(ExecutionResult result) {
@@ -41,10 +42,12 @@ public class ExecuteCobolController {
         try {
             process = Runtime.getRuntime()
                     .exec("sh build.sh");
+
+            // IOUtils.toString waits for the stream to get to an end.
+            // Therefore we don't have to explicitly wait for the process to be finished
             String output = IOUtils.toString(process.getInputStream(), UTF_8);
             String error = IOUtils.toString(process.getErrorStream(), UTF_8);
 
-            process.waitFor();
             result.setSystemoutput(output);
             result.setSystemerror(error);
         } catch (Exception e) {
