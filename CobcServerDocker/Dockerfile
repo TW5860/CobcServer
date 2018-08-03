@@ -26,13 +26,7 @@ COPY usrlocallib.conf /etc/ld.so.conf.d/usrlocallib.conf
 RUN ldconfig -v
 
 # BUILD CODE
-ENV GIT_URL https://github.com/TW5860/CobcServer.git
-WORKDIR /
-RUN git clone $GIT_URL cobcserver
-RUN chmod -R 775 cobcserver
-# Remove SSH keys
-#RUN rm -rf /root/.ssh/
-## Buildprocess
+COPY . /cobcserver
 WORKDIR /cobcserver
 RUN mvn clean package -DskipTests
 
