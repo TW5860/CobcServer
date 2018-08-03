@@ -25,10 +25,13 @@ RUN make installcheck
 COPY usrlocallib.conf /etc/ld.so.conf.d/usrlocallib.conf
 RUN ldconfig -v
 
+WORKDIR /cobcserver
+COPY pom.xml /cobcserver/pom.xml
+RUN mvn dependency:go-offline
+
 # BUILD CODE
 COPY . /cobcserver
-WORKDIR /cobcserver
-RUN mvn clean package -DskipTests
+RUN mvn clean package
 
 #COPY /cobcserver/target/cobc-server.jar app.jar
 RUN mkdir -p scripts && chmod -R 0777 scripts
