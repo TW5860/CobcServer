@@ -31,7 +31,7 @@ WORKDIR /cobcserver
 RUN mvn clean package -DskipTests
 
 #COPY /cobcserver/target/cobc-server.jar app.jar
-RUN mkdir scripts && chmod -R 0777 scripts
+RUN mkdir -p scripts && chmod -R 0777 scripts
 COPY build.sh build.sh
 
 # Run the application
