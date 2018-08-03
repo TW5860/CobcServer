@@ -13,8 +13,9 @@ RUN yum install autoconf \
                 libgmp-dev \
                 gmp gmp-devel \
                 which \
+                wget \
                 -y
-COPY gnu-cobol.tar.gz gnu-cobol.tar.gz
+RUN wget -O gnu-cobol.tar.gz https://downloads.sourceforge.net/project/open-cobol/gnu-cobol/2.2/gnucobol-2.2.tar.gz
 RUN tar zxf gnu-cobol.tar.gz
 WORKDIR gnucobol-2.2
 RUN ./configure --without-db
@@ -33,7 +34,6 @@ RUN mvn dependency:go-offline
 COPY . /cobcserver
 RUN mvn clean package
 
-#COPY /cobcserver/target/cobc-server.jar app.jar
 RUN mkdir -p scripts && chmod -R 0777 scripts
 COPY build.sh build.sh
 
