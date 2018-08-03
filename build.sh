@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
-rm -f ./scripts/test
-cobc -x -free -o scripts/test scripts/testdriver.cbl
-./scripts/test
+ID=$1
+rm -f ./scripts/test-${ID}
+cobc -x -free -o scripts/test-${ID} scripts/testdriver-${ID}.cbl
+./scripts/test-${ID}

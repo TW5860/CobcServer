@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.concurrent.*;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -26,6 +27,17 @@ public class ExecuteCobolControllerTest {
             "DISPLAY 'bla'.\n" +
             "STOP RUN.\n";
 
+    private static final String CODE_WITH_SLEEP = "IDENTIFICATION DIVISION.\n" +
+            "PROGRAM-ID. PGAA0000.\n" +
+            "DATA DIVISION.\n" +
+            "WORKING-STORAGE SECTION.\n" +
+            "LINKAGE SECTION.\n" +
+            "PROCEDURE DIVISION.\n" +
+            "SOME SECTION.\n" +
+            "CALL \"C$SLEEP\" USING 3 END-CALL\n" +
+            "DISPLAY 'slept some seconds'.\n" +
+            "STOP RUN.\n";
+
     private static final String CODE_WITH_ERROR = "IDENTIFICATION DIVISION.\n" +
             "PROGRAM-ID. PGAA0000.\n" +
             "DATA DIVISION.\n" +
@@ -40,6 +52,7 @@ public class ExecuteCobolControllerTest {
     private ByteArrayOutputStream errStream = new ByteArrayOutputStream();
 
     private PrintStream oldOutStream, oldErrStream;
+    private ExecuteCobolController controller;
 
     @Before
     public void setUp() throws Exception {
@@ -47,6 +60,7 @@ public class ExecuteCobolControllerTest {
         oldErrStream = System.err;
         System.setOut(new PrintStream(outStream));
         System.setErr(new PrintStream(errStream));
+        controller = new ExecuteCobolController();
     }
 
     @After
@@ -57,7 +71,6 @@ public class ExecuteCobolControllerTest {
 
     @Test
     public void shouldRunCobolCorrectly() throws Exception {
-        ExecuteCobolController controller = new ExecuteCobolController();
         ExecuteCobolRequest request = new ExecuteCobolRequest(CODE);
 
         ResponseEntity<ExecutionResult> result = controller.compileAndExecuteCobol(request);
@@ -68,7 +81,6 @@ public class ExecuteCobolControllerTest {
     }
     @Test
     public void shouldRetrieveErrors() throws Exception {
-        ExecuteCobolController controller = new ExecuteCobolController();
         ExecuteCobolRequest request = new ExecuteCobolRequest(CODE_WITH_ERROR);
 
         ResponseEntity<ExecutionResult> result = controller.compileAndExecuteCobol(request);
@@ -77,5 +89,27 @@ public class ExecuteCobolControllerTest {
         assertThat(result.getBody().getSystemoutput(), is(""));
         assertThat(result.getBody().getSystemerror(), containsString("'SOMETHING-UNKNOWN' is not defined"));
         assertThat(errStream.toString(), containsString("'SOMETHING-UNKNOWN' is not defined"));
+    }
+
+    @Test
+    public void shouldBeAbleToExecuteTwoCommandsSimultaneously() throws InterruptedException, ExecutionException, TimeoutException {
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+
+        Future<ResponseEntity<ExecutionResult>> sleepResult = runCodeInThread(executorService, CODE_WITH_SLEEP);
+        Future<ResponseEntity<ExecutionResult>> secondResult = runCodeInThread(executorService, CODE);
+
+        String sleepOutput = sleepResult.get(10, TimeUnit.SECONDS).getBody().getSystemoutput();
+        String secondOutput = secondResult.get(10, TimeUnit.SECONDS).getBody().getSystemoutput();
+
+        executorService.shutdown();
+
+        assertThat(sleepOutput, is("slept some seconds\n"));
+        assertThat(secondOutput, is("bla\n"));
+    }
+
+    private Future<ResponseEntity<ExecutionResult>> runCodeInThread(ExecutorService executorService,
+                                                                    String code) {
+        return executorService
+                .submit(() -> controller.compileAndExecuteCobol(new ExecuteCobolRequest(code)));
     }
 }

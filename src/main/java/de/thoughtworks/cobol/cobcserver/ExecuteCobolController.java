@@ -33,7 +33,7 @@ public class ExecuteCobolController {
 
     private void writeTmpFile(@RequestBody ExecuteCobolRequest testsuite) throws IOException {
         Files.createDirectories(Paths.get("scripts/"));
-        Files.write(Paths.get("scripts/testdriver.cbl"), testsuite.getCobolCode().getBytes());
+        Files.write(Paths.get("scripts/testdriver-" + getId() + ".cbl"), testsuite.getCobolCode().getBytes());
     }
 
     private ExecutionResult compileAndExecute() {
@@ -41,7 +41,7 @@ public class ExecuteCobolController {
         Process process;
         try {
             process = Runtime.getRuntime()
-                    .exec("sh build.sh");
+                    .exec("sh build.sh " + getId());
 
             // IOUtils.toString waits for the stream to get to an end.
             // Therefore we don't have to explicitly wait for the process to be finished
@@ -54,6 +54,10 @@ public class ExecuteCobolController {
             result.setSystemerror(e.getMessage());
         }
         return result;
+    }
+
+    private String getId() {
+        return String.valueOf(Thread.currentThread().getId());
     }
 
 }
