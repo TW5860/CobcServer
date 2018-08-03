@@ -1,5 +1,6 @@
 package de.thoughtworks.cobol.cobcserver;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -7,10 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.concurrent.Executors;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Controller
 public class ExecuteCobolController {
@@ -40,39 +41,16 @@ public class ExecuteCobolController {
         try {
             process = Runtime.getRuntime()
                     .exec("sh build.sh");
-
-            StringLineBuilder commandLineOutput = registerStreamReader(process.getInputStream());
-            StringLineBuilder commandLineError = registerStreamReader(process.getErrorStream());
+            String output = IOUtils.toString(process.getInputStream(), UTF_8);
+            String error = IOUtils.toString(process.getErrorStream(), UTF_8);
 
             process.waitFor();
-            result.setSystemoutput(commandLineOutput.toString());
-            result.setSystemerror(commandLineError.toString());
+            result.setSystemoutput(output);
+            result.setSystemerror(error);
         } catch (Exception e) {
             result.setSystemerror(e.getMessage());
         }
         return result;
-    }
-
-    private StringLineBuilder registerStreamReader(InputStream stream) {
-        StringLineBuilder commandLineError = new StringLineBuilder();
-        StreamToStringConsumerReader streamGobbler =
-                new StreamToStringConsumerReader(stream, commandLineError::append);
-        Executors.newSingleThreadExecutor().submit(streamGobbler);
-        return commandLineError;
-    }
-
-    static class StringLineBuilder {
-        StringBuilder builder = new StringBuilder();
-
-        StringLineBuilder append(String line) {
-            builder.append(line);
-            builder.append("\n");
-            return this;
-        }
-
-        public String toString() {
-            return builder.toString();
-        }
     }
 
 }
