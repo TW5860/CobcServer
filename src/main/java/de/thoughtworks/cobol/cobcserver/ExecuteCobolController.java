@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.Executors;
@@ -40,8 +41,8 @@ public class ExecuteCobolController {
             process = Runtime.getRuntime()
                     .exec("sh build.sh");
 
-            StringLineBuilder commandLineOutput = registerCLReader(process);
-            StringLineBuilder commandLineError = registerCLErrorReader(process);
+            StringLineBuilder commandLineOutput = registerStreamReader(process.getInputStream());
+            StringLineBuilder commandLineError = registerStreamReader(process.getErrorStream());
 
             process.waitFor();
             result.setSystemoutput(commandLineOutput.toString());
@@ -52,25 +53,12 @@ public class ExecuteCobolController {
         return result;
     }
 
-    private StringLineBuilder registerCLErrorReader(Process process) {
-        StreamToStringConsumerReader streamGobbler;
-
+    private StringLineBuilder registerStreamReader(InputStream stream) {
         StringLineBuilder commandLineError = new StringLineBuilder();
-        streamGobbler =
-                new StreamToStringConsumerReader(process.getErrorStream(), commandLineError::append);
-        Executors.newSingleThreadExecutor().submit(streamGobbler);
-        streamGobbler =
-                new StreamToStringConsumerReader(process.getErrorStream(), System.err::println);
+        StreamToStringConsumerReader streamGobbler =
+                new StreamToStringConsumerReader(stream, commandLineError::append);
         Executors.newSingleThreadExecutor().submit(streamGobbler);
         return commandLineError;
-    }
-
-    private StringLineBuilder registerCLReader(Process process) {
-        StringLineBuilder commandLineOutput = new StringLineBuilder();
-        StreamToStringConsumerReader streamGobbler =
-                new StreamToStringConsumerReader(process.getInputStream(), commandLineOutput::append);
-        Executors.newSingleThreadExecutor().submit(streamGobbler);
-        return commandLineOutput;
     }
 
     static class StringLineBuilder {
